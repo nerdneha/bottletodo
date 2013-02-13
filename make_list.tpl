@@ -4,8 +4,9 @@
 <ul>
   %for row in open_rows:
   <li>
-    {{row[0]}}: {{row[1]}}
-    <a href="/edit/{{row[0]}}">edit</a>
+    {{row[0]}}: {{row[1]}} &nbsp;
+    <a href="/edit/{{row[0]}}">edit</a> &nbsp;
+    <a href="/change/{{row[0]}}/0">close task</a>
   </li>
   %end
 </ul>
@@ -15,8 +16,11 @@
 <ul>
   %for row in closed_rows:
   <li>
-    {{row[0]}}: {{row[1]}}
-    <a href="/edit/{{row[0]}}">edit</a>
+    {{row[0]}}: {{row[1]}} &nbsp;
+    <a href="/edit/{{row[0]}}">edit</a> &nbsp;
+    <a href="/change/{{row[0]}}/1">open task</a>
   </li>
   %end
 </ul>
+
+<a href="/new">Add a new item here!</a>
