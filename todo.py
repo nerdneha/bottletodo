@@ -105,7 +105,7 @@ def mistake404(code):
 def mistake403(code):
   return 'The parameter you passed has the wrong format!'
 
-if os.environ.get('ENVIRONMENT' == 'PRODUCTION':
+if os.environ.get('ENVIRONMENT' == 'PRODUCTION'):
   port = int(os.environ.get('PORT', 5000))
   print "port = %d" % port
   run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
