@@ -9,25 +9,31 @@ def start_at_todo():
 
 @route('/todo', method='POST')
 def todo_save():
-    edit = request.POST.get('task','').strip()
-    status = request.POST.get('status','').strip()
-    no = request.POST.get('no','').strip()
-    if status == 'open':
-      status = 1
-    else:
-      status = 0
-    conn = sqlite3.connect('todo.db')
-    c = conn.cursor()
-    c.execute("UPDATE todo SET task = ?, status = ? WHERE id LIKE?", (edit,
+  edit = request.POST.get('task','').strip()
+  status = request.POST.get('status','').strip()
+  no = request.POST.get('no','').strip()
+  if status == 'open':
+    status = 1
+  else:
+    status = 0
+  conn = sqlite3.connect('todo.db')
+  c = conn.cursor()
+  c.execute("UPDATE todo SET task = ?, status = ? WHERE id LIKE?", (edit,
                                                                       status,
                                                                       no))
-    conn.commit()
-    return redirect("/todo")
+  conn.commit()
+  return redirect("/todo")
 
 @route('/todo', method='GET')
 def todo_list():
   conn = sqlite3.connect('todo.db')
   c = conn.cursor()
+  todo_count = c.execute("SELECT name FROM sqlite_master WHERE name='todo'").fetchall()
+  #print todo_count
+  if todo_count == []:
+    conn.execute("CREATE TABLE todo (id INTEGER PRIMARY KEY, task char(100) NOT NULL, status bool NOT NULL)")
+    conn.execute("INSERT INTO todo (task,status) VALUES ('Add something to the todo list',1)")
+    conn.commit()
   c.execute("SELECT id, task FROM todo WHERE status LIKE '1'")
   open_items = c.fetchall()
   c.execute("SELECT id, task FROM todo WHERE status LIKE '0'")
@@ -104,6 +110,8 @@ def mistake404(code):
 @error(403)
 def mistake403(code):
   return 'The parameter you passed has the wrong format!'
+
+print sqlite3.connect('todo.db')
 
 if os.environ.get('ENVIRONMENT') == 'PRODUCTION':
   port = int(os.environ.get('PORT', 5000))
