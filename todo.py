@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from bottle import route, run, debug, template, request, validate
 from bottle import error, redirect
@@ -104,5 +105,6 @@ def mistake404(code):
 def mistake403(code):
   return 'The parameter you passed has the wrong format!'
 
+port = int(os.environ.get('PORT', 5000))
 debug(True) #dev only, not for production
-run(reloader=True) #dev only
+run(reloader=True, port=port) #dev only
