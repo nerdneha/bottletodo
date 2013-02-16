@@ -1,1 +1,1 @@
-web: todo.py
+web: python todo.py
