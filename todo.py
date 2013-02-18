@@ -1,122 +1,99 @@
 import os
-import sqlite3
-from bottle import route, run, debug, template, request, validate
-from bottle import error, redirect
+import pymongo
+import bottle
 
-@route('/')
+connection = pymongo.Connection('localhost', safe=True)
+db=connection.todolist
+tasks = db.tasks
+
+@bottle.route('/')
 def start_at_todo():
-  return redirect("/todo")
+  return bottle.redirect("/todo")
 
-@route('/todo', method='POST')
+@bottle.route('/todo', method='POST')
 def todo_save():
-  edit = request.POST.get('task','').strip()
-  status = request.POST.get('status','').strip()
-  no = request.POST.get('no','').strip()
-  if status == 'open':
-    status = 1
-  else:
-    status = 0
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("UPDATE todo SET task = ?, status = ? WHERE id LIKE?", (edit,
-                                                                      status,
-                                                                      no))
-  conn.commit()
-  return redirect("/todo")
+   edit = bottle.request.forms.get('task','').strip()
+    status = bottle.request.forms.get('status','').strip()
+    no = bottle.request.forms.get('no','').strip()
+    print no, type(no)
+    if status == 'open':
+      status = 1
+    else:
+      status = 0
+    tasks.update({'_id': int(no)}, {'task': edit, 'status': status})
+    print tasks.find_one({'_id': no})
+    return bottle.redirect("/todo")
 
-@route('/todo', method='GET')
+@bottle.route('/todo', method='GET')
 def todo_list():
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  todo_count = c.execute("SELECT name FROM sqlite_master WHERE name='todo'").fetchall()
-  #print todo_count
-  if todo_count == []:
-    conn.execute("CREATE TABLE todo (id INTEGER PRIMARY KEY, task char(100) NOT NULL, status bool NOT NULL)")
-    conn.execute("INSERT INTO todo (task,status) VALUES ('Add something to the todo list',1)")
-    conn.commit()
-  c.execute("SELECT id, task FROM todo WHERE status LIKE '1'")
-  open_items = c.fetchall()
-  c.execute("SELECT id, task FROM todo WHERE status LIKE '0'")
-  closed_items = c.fetchall()
-  c.close()
-  output = template('make_list', open_rows=open_items,
-                    closed_rows=closed_items)
+  #print_list(tasks.find())
+  open_tasks = tasks.find({'status':1})
+  closed_tasks = tasks.find({'status':0})
+  output = bottle.template('make_list', open_rows=open_tasks,
+                    closed_rows=closed_tasks)
   return output
 
-@route('/new', method='GET')
-def new_item():
-  if request.GET.get('save','').strip():
-    new = request.GET.get('task', '').strip()
-    conn = sqlite3.connect('todo.db')
-    c = conn.cursor()
-    c.execute("INSERT INTO todo (task, status) VALUES (?,?)", (new,1))
-    new_id = c.lastrowid
-    conn.commit()
-    c.close()
-    return redirect("/todo")
+@bottle.route('/add', method='GET')
+def new_item_mongo():
+  if bottle.request.GET.get('save','').strip():
+    new = bottle.request.GET.get('task', '').strip()
+    new_id = tasks.count() + 1
+    tasks.insert({"_id": new_id, "task": new, "status": 1})
+    return bottle.redirect("/todo")
   else:
-    return template('new_task')
+    return bottle.template('new_task')
 
-@route('/edit/:no', method='GET')
-@validate(no=int)
+@bottle.route('/edit/:no', method='GET')
+@bottle.validate(no=int)
 def edit_item(no):
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("SELECT task FROM todo WHERE id LIKE ?", (str(no)))
-  cur_data = c.fetchone()
-  return template('edit_task', old=cur_data, no=no)
+  cur_data = tasks.find_one({'_id': no})
+  return bottle.template('edit_task', old=cur_data, no=no)
 
-@route('/item:item#[1-9]+#')
+@bottle.route('/item:item#[1-9]+#')
 def show_item(item):
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("SELECT task FROM todo WHERE id LIKE ?", (item))
-  result = c.fetchall()
-  c.close()
+  result = tasks.find_one({'_id': int(item)})
   if not result:
     return 'This item number does not exist!'
   else:
-    return 'Task: %s' %result[0]
+    return 'Task: %s' %result['task']
 
-@route('/help')
+# show_item = bottle.route('/item:item#[1-9]+#')(show_item)
+
+@bottle.route('/help')
 def help():
   return static_file('help.html', root='/path/to/file')
 
-@route('/json:json#[1-9]+#')
-def show_json(json):
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("SELECT task FROM todo WHERE id LIKE ?", (json))
-  result = c.fetchall()
-  c.close()
+@bottle.route('/json:number#[1-9]+#')
+def show_json(number):
+  result = tasks.find_one({'_id': int(number)})
   if not result:
     return {'task':'This item number does not exist!'}
   else:
-    return {'Task': result[0]}
+    return result
 
-@route('/change/:no/:status')
-def complete_task(no, status):
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("UPDATE todo SET status = ? WHERE id LIKE?", (status, no))
-  conn.commit()
-  print "tried to updated item " + no
-  return redirect("/todo")
+@bottle.route('/change/:no/:status')
+def change_status(no, status):
+  tasks.update({'_id': int(no)}, {'$set': {'status': int(status)}})
+  #print "tried to updated item " + no
+  return bottle.redirect("/todo")
 
-@error(404)
+@bottle.error(404)
 def mistake404(code):
   return 'Sorry, this page does not exist!'
 
-@error(403)
+@bottle.error(403)
 def mistake403(code):
   return 'The parameter you passed has the wrong format!'
 
-print sqlite3.connect('todo.db')
+def print_list(mongo_list):
+  print "printing list"
+  for item in mongo_list:
+    print item
 
 if os.environ.get('ENVIRONMENT') == 'PRODUCTION':
   port = int(os.environ.get('PORT', 5000))
   print "port = %d" % port
-  run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+  bottle.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 else:
-  debug(True) #dev only, not for production
-  run(reloader=True) #dev only
+  bottle.debug(True) #dev only, not for production
+  bottle.run(host='localhost', port=8082, reloader=True) #dev only
