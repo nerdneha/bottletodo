@@ -2,9 +2,17 @@ import os
 import pymongo
 import bottle
 
-connection = pymongo.Connection('localhost', safe=True)
-db=connection.todolist
-tasks = db.tasks
+#MONGOHQ_URL: mongodb://neha:todobottle@linus.mongohq.com:10009/todolist
+MONGO_URL = os.environ.get('MONGOHQ_URL')
+
+def connection_db():
+  if MONGO_URL:
+    connection = pymongo.Connection(MONGO_URL, safe=True)
+    db = connection[urlparse(MONGO_URL).path[1:]]
+  else:
+    connection = pymongo.Connection('localhost', safe=True)
+    db = connection.todolist
+  return db
 
 @bottle.route('/')
 def start_at_todo():
@@ -12,6 +20,8 @@ def start_at_todo():
 
 @bottle.route('/todo', method='POST')
 def todo_save():
+  db = connection_db()
+  tasks = db.tasks
   edit = bottle.request.forms.get('task','').strip()
   status = bottle.request.forms.get('status','').strip()
   no = bottle.request.forms.get('no','').strip()
@@ -27,6 +37,8 @@ def todo_save():
 @bottle.route('/todo', method='GET')
 def todo_list():
   #print_list(tasks.find())
+  db = connection_db()
+  tasks = db.tasks
   open_tasks = tasks.find({'status':1})
   closed_tasks = tasks.find({'status':0})
   output = bottle.template('make_list', open_rows=open_tasks,
@@ -35,6 +47,8 @@ def todo_list():
 
 @bottle.route('/add', method='GET')
 def new_item_mongo():
+  db = connection_db()
+  tasks = db.tasks
   if bottle.request.GET.get('save','').strip():
     new = bottle.request.GET.get('task', '').strip()
     new_id = tasks.count() + 1
@@ -46,11 +60,15 @@ def new_item_mongo():
 @bottle.route('/edit/:no', method='GET')
 @bottle.validate(no=int)
 def edit_item(no):
+  db = connection_db()
+  tasks = db.tasks
   cur_data = tasks.find_one({'_id': no})
   return bottle.template('edit_task', old=cur_data, no=no)
 
 @bottle.route('/item:item#[1-9]+#')
 def show_item(item):
+  db = connection_db()
+  tasks = db.tasks
   result = tasks.find_one({'_id': int(item)})
   if not result:
     return 'This item number does not exist!'
@@ -58,13 +76,16 @@ def show_item(item):
     return 'Task: %s' %result['task']
 
 # show_item = bottle.route('/item:item#[1-9]+#')(show_item)
-
+'''
 @bottle.route('/help')
 def help():
   return static_file('help.html', root='/path/to/file')
+'''
 
 @bottle.route('/json:number#[1-9]+#')
 def show_json(number):
+  db = connection_db()
+  tasks = db.tasks
   result = tasks.find_one({'_id': int(number)})
   if not result:
     return {'task':'This item number does not exist!'}
@@ -73,6 +94,8 @@ def show_json(number):
 
 @bottle.route('/change/:no/:status')
 def change_status(no, status):
+  db = connection_db()
+  tasks = db.tasks
   tasks.update({'_id': int(no)}, {'$set': {'status': int(status)}})
   #print "tried to updated item " + no
   return bottle.redirect("/todo")
