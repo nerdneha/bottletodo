@@ -1,3 +1,4 @@
+import os
 import pymongo
 import bottle
 
@@ -89,5 +90,11 @@ def print_list(mongo_list):
   for item in mongo_list:
     print item
 
-bottle.debug(True) #dev only, not for production
-bottle.run(host='localhost', port=8082, reloader=True) #dev only
+
+if os.environ.get('ENVIRONMENT') == 'PRODUCTION':
+  port = int(os.environ.get('PORT', 5000))
+  print "port = %d" % port
+  bottle.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+else:
+  bottle.debug(True) #dev only, not for production
+  bottle.run(host='localhost', port=8082, reloader=True) #dev only
