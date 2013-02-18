@@ -1,4 +1,3 @@
-import sqlite3
 import pymongo
 import bottle
 
@@ -26,13 +25,14 @@ def todo_save():
 
 @bottle.route('/todo', method='GET')
 def todo_list():
-  open_tasks = tasks.find({"status":1})
-  closed_tasks = tasks.find({"status":0})
+  #print_list(tasks.find())
+  open_tasks = tasks.find({'status':1})
+  closed_tasks = tasks.find({'status':0})
   output = bottle.template('make_list', open_rows=open_tasks,
                     closed_rows=closed_tasks)
   return output
 
-@bottle.route('/newmongo', method='GET')
+@bottle.route('/add', method='GET')
 def new_item_mongo():
   if bottle.request.GET.get('save','').strip():
     new = bottle.request.GET.get('task', '').strip()
@@ -50,41 +50,30 @@ def edit_item(no):
 
 @bottle.route('/item:item#[1-9]+#')
 def show_item(item):
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("SELECT task FROM todo WHERE id LIKE ?", (item))
-  result = c.fetchall()
-  c.close()
+  result = tasks.find_one({'_id': int(item)})
   if not result:
     return 'This item number does not exist!'
   else:
-    return 'Task: %s' %result[0]
+    return 'Task: %s' %result['task']
 
 # show_item = bottle.route('/item:item#[1-9]+#')(show_item)
 
 @bottle.route('/help')
 def help():
   return static_file('help.html', root='/path/to/file')
-'''
-@bottle.route('/json:json#[1-9]+#')
-def show_json(json):
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("SELECT task FROM todo WHERE id LIKE ?", (json))
-  result = c.fetchall()
-  c.close()
+
+@bottle.route('/json:number#[1-9]+#')
+def show_json(number):
+  result = tasks.find_one({'_id': int(number)})
   if not result:
     return {'task':'This item number does not exist!'}
   else:
-    return {'Task': result[0]}
+    return result
 
 @bottle.route('/change/:no/:status')
-def complete_task(no, status):
-  conn = sqlite3.connect('todo.db')
-  c = conn.cursor()
-  c.execute("UPDATE todo SET status = ? WHERE id LIKE?", (status, no))
-  conn.commit()
-  print "tried to updated item " + no
+def change_status(no, status):
+  tasks.update({'_id': int(no)}, {'$set': {'status': int(status)}})
+  #print "tried to updated item " + no
   return bottle.redirect("/todo")
 
 @bottle.error(404)
@@ -94,6 +83,11 @@ def mistake404(code):
 @bottle.error(403)
 def mistake403(code):
   return 'The parameter you passed has the wrong format!'
-'''
+
+def print_list(mongo_list):
+  print "printing list"
+  for item in mongo_list:
+    print item
+
 bottle.debug(True) #dev only, not for production
 bottle.run(host='localhost', port=8082, reloader=True) #dev only

@@ -6,7 +6,7 @@
   <li>
     {{row['_id']}}: {{row['task']}} &nbsp;
     <a href="/edit/{{row['_id']}}">edit</a> &nbsp;
-    %#<a href="/change/{{row[0]}}/0">close task</a>
+    <a href="/change/{{row['_id']}}/0">close task</a>
   </li>
   %end
 </ul>
@@ -16,11 +16,11 @@
 <ul>
   %for row in closed_rows:
   <li>
-    %#{{row[0]}}: {{row[1]}} &nbsp;
-    %#<a href="/edit/{{row[0]}}">edit</a> &nbsp;
-    %#<a href="/change/{{row[0]}}/1">open task</a>
+    {{row['_id']}}: {{row['task']}} &nbsp;
+    <a href="/edit/{{row['_id']}}">edit</a> &nbsp;
+    <a href="/change/{{row['_id']}}/1">open task</a>
   </li>
   %end
 </ul>
 
-<a href="/newmongo">Add a new item here!</a>
+<a href="/add">Add a new item here!</a>
