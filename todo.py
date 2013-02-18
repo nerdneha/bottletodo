@@ -3,7 +3,6 @@ import pymongo
 import bottle
 from urlparse import urlparse
 
-#MONGOHQ_URL: mongodb://neha:todobottle@linus.mongohq.com:10009/todolist
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 
 def connection_db():
