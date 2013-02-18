@@ -12,17 +12,17 @@ def start_at_todo():
 
 @bottle.route('/todo', method='POST')
 def todo_save():
-   edit = bottle.request.forms.get('task','').strip()
-    status = bottle.request.forms.get('status','').strip()
-    no = bottle.request.forms.get('no','').strip()
-    print no, type(no)
-    if status == 'open':
-      status = 1
-    else:
-      status = 0
-    tasks.update({'_id': int(no)}, {'task': edit, 'status': status})
-    print tasks.find_one({'_id': no})
-    return bottle.redirect("/todo")
+  edit = bottle.request.forms.get('task','').strip()
+  status = bottle.request.forms.get('status','').strip()
+  no = bottle.request.forms.get('no','').strip()
+  print no, type(no)
+  if status == 'open':
+    status = 1
+  else:
+    status = 0
+  tasks.update({'_id': int(no)}, {'task': edit, 'status': status})
+  print tasks.find_one({'_id': no})
+  return bottle.redirect("/todo")
 
 @bottle.route('/todo', method='GET')
 def todo_list():
