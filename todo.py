@@ -3,17 +3,14 @@ import pymongo
 import bottle
 from urlparse import urlparse
 
-#MONGOHQ_URL: mongodb://neha:todobottle@linus.mongohq.com:10009/todolist
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 
-def connection_db():
-  if MONGO_URL:
+if MONGO_URL:
     connection = pymongo.Connection(MONGO_URL, safe=True)
     db = connection[urlparse(MONGO_URL).path[1:]]
-  else:
+else:
     connection = pymongo.Connection('localhost', safe=True)
     db = connection.todolist
-  return db
 
 @bottle.route('/')
 def start_at_todo():
@@ -21,7 +18,6 @@ def start_at_todo():
 
 @bottle.route('/todo', method='POST')
 def todo_save():
-  db = connection_db()
   tasks = db.tasks
   edit = bottle.request.forms.get('task','').strip()
   status = bottle.request.forms.get('status','').strip()
@@ -38,7 +34,6 @@ def todo_save():
 @bottle.route('/todo', method='GET')
 def todo_list():
   #print_list(tasks.find())
-  db = connection_db()
   tasks = db.tasks
   open_tasks = tasks.find({'status':1})
   closed_tasks = tasks.find({'status':0})
@@ -48,7 +43,6 @@ def todo_list():
 
 @bottle.route('/add', method='GET')
 def new_item_mongo():
-  db = connection_db()
   tasks = db.tasks
   if bottle.request.GET.get('save','').strip():
     new = bottle.request.GET.get('task', '').strip()
@@ -61,14 +55,12 @@ def new_item_mongo():
 @bottle.route('/edit/:no', method='GET')
 @bottle.validate(no=int)
 def edit_item(no):
-  db = connection_db()
   tasks = db.tasks
   cur_data = tasks.find_one({'_id': no})
   return bottle.template('edit_task', old=cur_data, no=no)
 
 @bottle.route('/item:item#[1-9]+#')
 def show_item(item):
-  db = connection_db()
   tasks = db.tasks
   result = tasks.find_one({'_id': int(item)})
   if not result:
@@ -85,7 +77,6 @@ def help():
 
 @bottle.route('/json:number#[1-9]+#')
 def show_json(number):
-  db = connection_db()
   tasks = db.tasks
   result = tasks.find_one({'_id': int(number)})
   if not result:
@@ -95,7 +86,6 @@ def show_json(number):
 
 @bottle.route('/change/:no/:status')
 def change_status(no, status):
-  db = connection_db()
   tasks = db.tasks
   tasks.update({'_id': int(no)}, {'$set': {'status': int(status)}})
   #print "tried to updated item " + no
