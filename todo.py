@@ -11,14 +11,14 @@ if MONGO_URL:
 else:
     connection = pymongo.Connection('localhost', safe=True)
     db = connection.todolist
+tasks = db.tasks
 
 @bottle.route('/')
 def start_at_todo():
   return bottle.redirect("/todo")
 
-@bottle.route('/todo', method='POST')
+@bottle.route('/edit', method='POST')
 def todo_save():
-  tasks = db.tasks
   edit = bottle.request.forms.get('task','').strip()
   status = bottle.request.forms.get('status','').strip()
   no = bottle.request.forms.get('no','').strip()
@@ -34,34 +34,31 @@ def todo_save():
 @bottle.route('/todo', method='GET')
 def todo_list():
   #print_list(tasks.find())
-  tasks = db.tasks
   open_tasks = tasks.find({'status':1})
   closed_tasks = tasks.find({'status':0})
   output = bottle.template('make_list', open_rows=open_tasks,
                     closed_rows=closed_tasks)
   return output
 
+@bottle.route('/add', method='POST')
+def save_new_item():
+  new = bottle.request.forms.get('task', '').strip()
+  new_id = tasks.count() + 1
+  tasks.insert({"_id": new_id, "task": new, "status": 1})#POST THIS
+  return bottle.redirect("/todo")
+
 @bottle.route('/add', method='GET')
-def new_item_mongo():
-  tasks = db.tasks
-  if bottle.request.GET.get('save','').strip():
-    new = bottle.request.GET.get('task', '').strip()
-    new_id = tasks.count() + 1
-    tasks.insert({"_id": new_id, "task": new, "status": 1})
-    return bottle.redirect("/todo")
-  else:
+def enter_new_item():
     return bottle.template('new_task')
 
 @bottle.route('/edit/:no', method='GET')
 @bottle.validate(no=int)
 def edit_item(no):
-  tasks = db.tasks
   cur_data = tasks.find_one({'_id': no})
   return bottle.template('edit_task', old=cur_data, no=no)
 
 @bottle.route('/item:item#[1-9]+#')
 def show_item(item):
-  tasks = db.tasks
   result = tasks.find_one({'_id': int(item)})
   if not result:
     return 'This item number does not exist!'
@@ -77,7 +74,6 @@ def help():
 
 @bottle.route('/json:number#[1-9]+#')
 def show_json(number):
-  tasks = db.tasks
   result = tasks.find_one({'_id': int(number)})
   if not result:
     return {'task':'This item number does not exist!'}
@@ -86,7 +82,6 @@ def show_json(number):
 
 @bottle.route('/change/:no/:status')
 def change_status(no, status):
-  tasks = db.tasks
   tasks.update({'_id': int(no)}, {'$set': {'status': int(status)}})
   #print "tried to updated item " + no
   return bottle.redirect("/todo")
