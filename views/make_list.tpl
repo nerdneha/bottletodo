@@ -4,7 +4,14 @@
 <ul>
   %for row in open_rows:
   <li>
-    {{row['_id']}}: {{row['task']}} &nbsp;
+    {{row['_id']}}: {{row['task']}}
+    %if 'username' in row:
+      (by {{row['username']}} 
+      %if 'food' in row:
+      who likes {{row['food']}}
+      %end
+      )
+    %end
     <a href="/edit/{{row['_id']}}">edit</a> &nbsp;
     <a href="/change/{{row['_id']}}/0">close task</a>
   </li>
@@ -16,7 +23,14 @@
 <ul>
   %for row in closed_rows:
   <li>
-    {{row['_id']}}: {{row['task']}} &nbsp;
+    {{row['_id']}}: {{row['task']}}
+    %if 'username' in row:
+      (by {{row['username']}} 
+      %if 'food' in row:
+      who likes {{row['food']}}
+      %end
+      )
+    %end
     <a href="/edit/{{row['_id']}}">edit</a> &nbsp;
     <a href="/change/{{row['_id']}}/1">open task</a>
   </li>
@@ -24,3 +38,6 @@
 </ul>
 
 <a href="/add">Add a new item here!</a>
+<br />
+<br />
+<a href="/logout">Logout when you're done</a>
