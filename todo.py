@@ -5,7 +5,6 @@ import sign_up
 import manage_users
 from urlparse import urlparse
 
-
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 
 if MONGO_URL:
@@ -62,7 +61,7 @@ def todo_save():
     status = 1
   else:
     status = 0
-  tasks.update({'_id': int(no)}, {'task': edit, 'status': status})
+  tasks.update({'_id': int(no)}, {'$set': {'task': edit, 'status': status}})
   print tasks.find_one({'_id': no})
   return bottle.redirect('/todo')
 

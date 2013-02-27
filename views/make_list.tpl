@@ -8,9 +8,8 @@
     %if 'username' in row:
       (by {{row['username']}} 
       %if 'food' in row:
-      who likes {{row['food']}}
+      who likes {{row['food']}})
       %end
-      )
     %end
     <a href="/edit/{{row['_id']}}">edit</a> &nbsp;
     <a href="/change/{{row['_id']}}/0">close task</a>
