@@ -5,14 +5,15 @@ import sign_up
 import manage_users
 from urlparse import urlparse
 
+
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 
 if MONGO_URL:
-    connection = pymongo.Connection(MONGO_URL, safe=True)
-    db = connection[urlparse(MONGO_URL).path[1:]]
+  connection = pymongo.Connection(MONGO_URL, safe=True)
+  db = connection[urlparse(MONGO_URL).path[1:]]
 else:
-    connection = pymongo.Connection('localhost', safe=True)
-    db = connection.todolist
+  connection = pymongo.Connection('localhost', safe=True)
+  db = connection.todolist
 tasks = db.tasks
 
 @bottle.route('/')

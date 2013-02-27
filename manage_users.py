@@ -7,6 +7,7 @@ import hmac
 import bson
 
 MONGO_URL = os.environ.get('MONGOHQ_URL')
+
 if MONGO_URL:
   connection = pymongo.Connection(MONGO_URL, safe=True)
   db = connection[urlparse(MONGO_URL).path[1:]]

@@ -5,11 +5,12 @@ import manage_users
 import todo
 from urlparse import urlparse
 
+
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 
 if MONGO_URL:
-    connection = pymongo.Connection(MONGO_URL, safe=True)
-    db = connection[urlparse(MONGO_URL).path[1:]]
+  connection = pymongo.Connection(MONGO_URL, safe=True)
+  db = connection[urlparse(MONGO_URL).path[1:]]
 else:
   #USE IF USING MONGODB
   connection = pymongo.Connection('localhost', safe=True)
