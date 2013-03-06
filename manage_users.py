@@ -1,10 +1,10 @@
-import pymongo
-import os
 import hashlib
 import random
 import string
 import hmac
 import bson
+import os
+import pymongo
 from urlparse import urlparse
 
 MONGO_URL = os.environ.get('MONGOHQ_URL')

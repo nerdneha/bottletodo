@@ -6,7 +6,7 @@ import manage_users
 from urlparse import urlparse
 
 MONGO_URL = os.environ.get('MONGOHQ_URL')
-
+#print os.environ.get('MONGOHQ_URL')
 if MONGO_URL:
   connection = pymongo.Connection(MONGO_URL, safe=True)
   db = connection[urlparse(MONGO_URL).path[1:]]
@@ -56,13 +56,13 @@ def todo_save():
   edit = bottle.request.forms.get('task','').strip()
   status = bottle.request.forms.get('status','').strip()
   no = bottle.request.forms.get('no','').strip()
-  print no, type(no)
+  #print no, type(no)
   if status == 'open':
     status = 1
   else:
     status = 0
   tasks.update({'_id': int(no)}, {'$set': {'task': edit, 'status': status}})
-  print tasks.find_one({'_id': no})
+  #print tasks.find_one({'_id': no})
   return bottle.redirect('/todo')
 
 @bottle.route('/item:item#[1-9]+#')

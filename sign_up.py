@@ -5,7 +5,6 @@ import manage_users
 import todo
 from urlparse import urlparse
 
-
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 
 if MONGO_URL:
@@ -31,9 +30,9 @@ def store_user_and_pw():
   pwconf = bottle.request.forms.get('passwordconf')
   food = bottle.request.forms.get('food') #took this variable for fun
 
-  pw_error_check = manage_users.check_if_pws_match(password, pwconf)
+  pw_error_message = "Your passwords do not match"
 
-  if pw_error_check == None:
+  if password == pwconf:
     user_error_check = manage_users.add_user(username, password, food)
     if user_error_check == None:
       entry = db.users.find_one({"_id": username})
@@ -48,7 +47,7 @@ def store_user_and_pw():
       return bottle.template('signup', dict(pw_error = "", user_error =
                                             user_error_check))
   else:
-    return bottle.template('signup', dict(pw_error = pw_error_check, user_error = ""))
+    return bottle.template('signup', dict(pw_error = pw_error_message, user_error = ""))
 
 def get_session():
   cookie = bottle.request.get_cookie("session")

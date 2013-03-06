@@ -1,4 +1,4 @@
-<p> Please sign in below: </p>
+<p> Please sign in NOW: </p>
 <form action="/login" method="POST">
   <table>
     <tr>
