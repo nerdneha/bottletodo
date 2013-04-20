@@ -1,13 +1,13 @@
-<p> Please sign in NOW: </p>
+<p> Please sign in below with your Hackerschool Credentials or your login for this site: </p>
 <form action="/login" method="POST">
   <table>
     <tr>
-      <td>Username: </td>
-      <td> <input type="text" size="30" maxlength="50" name="username"> </td>
+      <td>Email: </td>
+      <td> <input type="text" size="30" maxlength="50" name="email"> </td>
       <td>{{user_error}}
-      <td> 
+      <td>
         % if user_error != "":
-        <a href="/signup">Sign up for that username here!</a> </td>
+        <a href="/signup">Sign up for that email here!</a> </td>
         %end
     </tr>
     <tr>

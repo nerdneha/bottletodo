@@ -38,18 +38,16 @@ def save_new_item():
   new = bottle.request.forms.get('task', '').strip()
   new_id = tasks.count() + 1
   session = sign_up.get_session()
-  username = session['username']
-  user_info = manage_users.get_user_info(username)
-  food = user_info['food']
-  tasks.insert({"_id": new_id, "task": new, "status": 1, "username": username,
-                "food": food})#POST THIS
+  email = session['email']
+  user_info = manage_users.get_info_from_db(email)
+  tasks.insert({"_id": new_id, "task": new, "status": 1, "username": user_info['username']})#POST THIS
   return bottle.redirect('/todo')
 
-@bottle.route('/edit/:no', method='GET')
-@bottle.validate(no=int)
-def edit_item(no):
-  cur_data = tasks.find_one({'_id': no})
-  return bottle.template('edit_task', old=cur_data, no=no)
+@bottle.route('/edit/:number', method='GET')
+@bottle.validate(number=int)
+def edit_item(number):
+  cur_data = tasks.find_one({'_id': number})
+  return bottle.template('edit_task', old=cur_data, no=number)
 
 @bottle.route('/edit', method='POST')
 def todo_save():

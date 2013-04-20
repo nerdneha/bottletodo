@@ -6,9 +6,11 @@
   <li>
     {{row['_id']}}: {{row['task']}}
     %if 'username' in row:
-      (by {{row['username']}} 
+    (by {{row['username']}}
       %if 'food' in row:
-          who likes {{row['food']}})
+        who likes {{row['food']}})
+      %else:
+        :D) 
       %end
     %end
     <a href="/edit/{{row['_id']}}">edit</a> &nbsp;
@@ -24,7 +26,7 @@
   <li>
     {{row['_id']}}: {{row['task']}}
     %if 'username' in row:
-      (by {{row['username']}} 
+      (by {{row['username']}}
       %if 'food' in row:
         who likes {{row['food']}})
       %end

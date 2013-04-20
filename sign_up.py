@@ -3,11 +3,11 @@ import pymongo
 import bottle
 import manage_users
 import todo
+import hs_auth
+
 from urlparse import urlparse
 
 MONGO_URL = os.environ.get('MONGOHQ_URL')
-print "MONGO_URL = %s" % (MONGO_URL)
-print "ENVIRON VAR = %s" % (os.environ.get('ENVIRONMENT'))
 
 if MONGO_URL:
   connection = pymongo.Connection(MONGO_URL, safe=True)
@@ -17,9 +17,9 @@ else:
   db = connection.todolist
 
 @bottle.route('/')
-def default_go_to_signup():
+def default_go_to_login():
   #eventually ask if there's a cookie so i can redirect to a logged in page
-  return bottle.redirect('/signup')
+  return bottle.redirect('/login')
 
 @bottle.route('/signup', method='GET')
 def get_user_and_pw():
@@ -27,25 +27,26 @@ def get_user_and_pw():
 
 @bottle.route('/signup', method='POST')
 def store_user_and_pw():
+  email = bottle.request.forms.get('email')
   username = bottle.request.forms.get('username')
   password = bottle.request.forms.get('password')
   pwconf = bottle.request.forms.get('passwordconf')
   food = bottle.request.forms.get('food') #took this variable for fun
 
-  pw_error_message = "Your passwords do not match"
-
   if password == pwconf:
-    user_error_check = manage_users.add_user(username, password, food)
+    user_error_check = manage_users.add_user(email, username, password, food)
     if user_error_check == None:
-      entry = db.users.find_one({"_id": username})
+      entry = db.users.find_one({"_id": email})
       hashed_pw = entry["password"]
       #Houston we are a go, the pws match and the user is not in the system
+
       #THIS IS WHERE THE MAGIC HAPPENS
-      session_id = manage_users.start_session(username)
+      session_id = manage_users.start_session(email)
       cookie = manage_users.get_cookie(session_id)
       bottle.response.set_cookie("session", cookie)
       bottle.redirect('/todo')
     else:
+      pw_error_message = "Your passwords do not match"
       return bottle.template('signup', dict(pw_error = "", user_error =
                                             user_error_check))
   else:
@@ -71,29 +72,32 @@ def get_login_info():
 
 @bottle.route('/login', method='POST')
 def log_user_in():
-  username = bottle.request.forms.get('username')
-  password = bottle.request.forms.get('password')
+    email = bottle.request.forms.get('email')
+    password = bottle.request.forms.get('password')
 
-  user_info = manage_users.get_user_info(username)
-  if user_info != None:
-    if manage_users.username_matches_password(user_info, password):
-      #houston we are a go, start a new session
-      session_id = manage_users.start_session(username)
-      cookie = manage_users.get_cookie(session_id)
-      bottle.response.set_cookie("session", cookie)
-      bottle.redirect('/todo')
+    hs_user_info = hs_auth.authenticate_with_hs(email, password)
+    print hs_user_info
+    user_info = manage_users.get_info_from_db(email)
+
+    if hs_user_info or user_info:
+        #user is a hackerschooler but isn't in my db
+        username = "%s %s" % (hs_user_info['first_name'], hs_user_info['last_name'])
+        manage_users.add_user(email, username)
+
+        session_id = manage_users.start_session(email)
+        cookie = manage_users.get_cookie(session_id)
+        bottle.response.set_cookie("session", cookie)
+        bottle.redirect('/todo')
     else:
-      error_message = "Your username didn't match your pw, retry?"
-      return bottle.template('login', dict(user_error = "", pw_error = error_message))
-  else:
-    error_message = "Your username doesn't exist:"
-    return bottle.template('login', dict(user_error = error_message, pw_error = ""))
+        error_message = "We couldn't log you in; check your hackerschool email and pw and try again :D"
+    return bottle.template('login', dict(user_error = "", pw_error = error_message))
 
 @bottle.route('/welcome', method='GET')
 def say_hello_to_my_friend():
   session = get_session()
-  username = session['username']
-  user_info = manage_users.get_user_info(username)
+  email = session['email']
+  user_info = manage_users.get_info_from_db(email)
+  username = user_info['username']
   food = user_info['food']
   return bottle.template('welcome', dict(username = username, food = food))
 

@@ -1,15 +1,19 @@
+<a href="/login">HSers and Users, log in here!</a>
 <p> Please sign in below: </p>
 <form action="/signup" method="POST">
   <table>
     <tr>
-      <td>Username: </td>
-      <td> <input type="text" size="30" maxlength="50" name="username"> </td>
+      <td>Email: </td>
+      <td> <input type="text" size="30" maxlength="50" name="email"> </td>
       <td>{{user_error}} </td>
       <td> 
         %if user_error != "":
         <a href="/login">Login here!</a> </td>
         %end
     </tr>
+    <tr>
+        <td>Username: </td>
+        <td> <input type="text" size="30" maxlength="50" name="username"> </td>
     <tr>
       <td>Password: </td>
       <td> <input type="password" size="30" maxlength="50" name="password">
