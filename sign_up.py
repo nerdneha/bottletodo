@@ -68,7 +68,7 @@ def get_session():
 
 @bottle.route('/login', method='GET')
 def get_login_info():
-  return bottle.template('login', dict(user_error="", pw_error=""))
+  return bottle.template('login', dict(user_error=None, pw_error=None))
 
 @bottle.route('/login', method='POST')
 def log_user_in():
@@ -78,10 +78,14 @@ def log_user_in():
     hs_user_info = hs_auth.authenticate_with_hs(email, password)
     user_info = manage_users.get_info_from_db(email)
 
+    user_error_msg = None
+    pw_error_msg = None
+
     if hs_user_info or manage_users.email_matches_password(user_info, password):
         if hs_user_info:
             #user is a hackerschooler but isn't in my db
-            username = "%s %s" % (hs_user_info['first_name'], hs_user_info['last_name'])
+            username = "%s %s" % (hs_user_info['first_name'],
+                    hs_user_info['last_name'])
             manage_users.add_user(email, username)
 
         session_id = manage_users.start_session(email)
@@ -89,16 +93,35 @@ def log_user_in():
         bottle.response.set_cookie("session", cookie)
         bottle.redirect('/todo')
     else:
-        error_message = "We couldn't log you in; check your email and pw and try again :D"
-    return bottle.template('login', dict(user_error = "", pw_error = error_message))
+        if user_info:
+            pw_error_msg = "We couldn't log you in; check your email and pw and try again :D"
+        else:
+            user_error_msg = "We don't have that email in our db,"
+        return bottle.template('login', dict(user_error = user_error_msg, pw_error = pw_error_msg))
+
+@bottle.route('/anon', method='GET')
+def explain_anon_to_user():
+    return bottle.template('anon')
+
+@bottle.route('/anon', method='POST')
+def create_anon_account():
+    email = "anon"
+    session_id = manage_users.start_session(email)
+    cookie = manage_users.get_cookie(session_id)
+    bottle.response.set_cookie("session", cookie)
+    bottle.redirect('/todo')
 
 @bottle.route('/welcome', method='GET')
 def say_hello_to_my_friend():
   session = get_session()
   email = session['email']
   user_info = manage_users.get_info_from_db(email)
-  username = user_info['username']
-  food = user_info['food']
+  if user_info:
+      username = user_info['username']
+      food = user_info['food']
+  elif email == "anon":
+      username = "Anonymous"
+      food = "Unknown"
   return bottle.template('welcome', dict(username = username, food = food))
 
 @bottle.route('/logout', method='GET')

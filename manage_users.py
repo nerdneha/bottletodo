@@ -111,16 +111,19 @@ def get_info_from_db(email):
         user_info = users.find_one({'_id': email})
         return user_info
     except pymongo.errors.PyMongoError:
-        print "Need to create a new acct"
+        print "Need to create a new acct or Anon"
         return None
 
 def email_matches_password(user_info, password):
     """
     Verifies if a username matches the password stored in the db
     """
-    db_password = user_info['password']
-    past_salt = db_password.split(",")[1]
-    return hash_pw(password, past_salt) == db_password
+    if user_info and 'password' in user_info:
+        db_password = user_info['password']
+        past_salt = db_password.split(",")[1]
+        return hash_pw(password, past_salt) == db_password
+    else:
+        return None
 
 def end_session(session_id):
     """
