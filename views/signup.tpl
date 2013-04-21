@@ -5,8 +5,8 @@
     <tr>
       <td>Email: </td>
       <td> <input type="text" size="30" maxlength="50" name="email"> </td>
-      <td>{{user_error}} </td>
       %if user_error:
+        <td>{{user_error}} </td>
         <td> <a href="/login">Login here!</a> </td>
       %end
     </tr>

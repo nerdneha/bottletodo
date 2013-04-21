@@ -6,7 +6,7 @@
 %end
 <p>Edit the task with ID = {{num}}</p>
 <form action="/edit" method="POST">
-  <input type="text" name="task" value="{{old['task']}}" size="100" maxlength="100">
+  <input type="text" name="task" value="{{old['task']}}" size="60" maxlength="100">
   <select name="status">
     <option>open</option>
     <option>closed</option>

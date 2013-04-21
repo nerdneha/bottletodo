@@ -17,3 +17,28 @@ The app has you sign up for an account or log in to an existing account (Hacker 
 
 Users can opt to log in as "anonymous" which lets you view the site but prevents you from adding or editing tasks. Cookies are used to store your session and are removed upon logout. 
 
+####The user screens look like the following:
+Main Screen with ToDo Items:
+
+![Todo](https://github.com/nehalita/bottletodo/blob/master/screenshots/todo.png?raw=true)
+
+Log In Page:
+
+![Login](https://github.com/nehalita/bottletodo/blob/master/screenshots/login.png?raw=true)
+
+Sign Up For Account Page:
+
+![Sign-Up](https://github.com/nehalita/bottletodo/blob/master/screenshots/signup.png?raw=true)
+
+Browse site as Anonymous Page:
+
+![Anon](https://github.com/nehalita/bottletodo/blob/master/screenshots/anon.png?raw=true)
+
+Add Task Page:
+
+![Add Task](https://github.com/nehalita/bottletodo/blob/master/screenshots/anon.png?raw=true)
+
+Edit Task Page:
+
+![Edit Task](https://github.com/nehalita/bottletodo/blob/master/screenshots/anon.png?raw=true)
+
