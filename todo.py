@@ -61,8 +61,8 @@ def edit_item(number):
     Allows users to edit a task's name and status based on task ID number
     Invalid users can edit but can't save the changes
     """
-    cur_data = db.tasks.find_one({'_id': number})
-    return bottle.template('edit_task', old=cur_data,
+    cur_task = db.tasks.find_one({'_id': number})
+    return bottle.template('edit_task', old=cur_task,
             num=number, error_msg=None)
 
 @bottle.route('/edit', method='POST')
@@ -87,7 +87,8 @@ def todo_save():
             {'task': edit, 'status': status}})
         return bottle.redirect('/todo')
     else:
-        return bottle.template('edit_task', old=db.tasks.fine_one({'_id': num}),
+        cur_task = db.tasks.find_one({'_id': int(num)})
+        return bottle.template('edit_task', old=cur_task,
                 num=num, error_msg="Sorry you cannot add tasks because you are not signed in as a user or because of a cookie error")
 
 @bottle.route('/change/:num/:status')

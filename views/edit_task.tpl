@@ -1,7 +1,7 @@
 %#template for editing a task
 %#the template expects to receive a value for "no" as well a "old", the text of the selected ToDo item
 
-%if error_message:
+%if error_msg:
 {{error_msg}} <br /> 
 %end
 <p>Edit the task with ID = {{num}}</p>
