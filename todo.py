@@ -40,7 +40,9 @@ def save_new_item():
   session = sign_up.get_session()
   email = session['email']
   user_info = manage_users.get_info_from_db(email)
-  tasks.insert({"_id": new_id, "task": new, "status": 1, "username": user_info['username']})#POST THIS
+  tasks.insert({"_id": new_id, "task": new, "status": 1, "username": user_info['username']})
+  if 'food' in user_info:
+      tasks.update({"_id": new_id}, {"$set": {"food": user_info['food']}})
   return bottle.redirect('/todo')
 
 @bottle.route('/edit/:number', method='GET')
