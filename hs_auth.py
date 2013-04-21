@@ -12,7 +12,7 @@ def authenticate_with_hs(email, password):
   try:
     response = urllib2.urlopen(request)
     return json.load(response)
-  except HTTPError:
+  except urllib2.HTTPError:
     return None
 
 if __name__ == '__main__':

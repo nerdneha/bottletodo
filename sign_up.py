@@ -76,20 +76,20 @@ def log_user_in():
     password = bottle.request.forms.get('password')
 
     hs_user_info = hs_auth.authenticate_with_hs(email, password)
-    print hs_user_info
     user_info = manage_users.get_info_from_db(email)
 
-    if hs_user_info or user_info:
-        #user is a hackerschooler but isn't in my db
-        username = "%s %s" % (hs_user_info['first_name'], hs_user_info['last_name'])
-        manage_users.add_user(email, username)
+    if hs_user_info or manage_users.email_matches_password(user_info, password):
+        if hs_user_info:
+            #user is a hackerschooler but isn't in my db
+            username = "%s %s" % (hs_user_info['first_name'], hs_user_info['last_name'])
+            manage_users.add_user(email, username)
 
         session_id = manage_users.start_session(email)
         cookie = manage_users.get_cookie(session_id)
         bottle.response.set_cookie("session", cookie)
         bottle.redirect('/todo')
     else:
-        error_message = "We couldn't log you in; check your hackerschool email and pw and try again :D"
+        error_message = "We couldn't log you in; check your email and pw and try again :D"
     return bottle.template('login', dict(user_error = "", pw_error = error_message))
 
 @bottle.route('/welcome', method='GET')
