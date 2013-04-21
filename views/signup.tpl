@@ -6,10 +6,9 @@
       <td>Email: </td>
       <td> <input type="text" size="30" maxlength="50" name="email"> </td>
       <td>{{user_error}} </td>
-      <td> 
-        %if user_error != "":
-        <a href="/login">Login here!</a> </td>
-        %end
+      %if user_error:
+        <td> <a href="/login">Login here!</a> </td>
+      %end
     </tr>
     <tr>
         <td>Username: </td>
@@ -23,7 +22,9 @@
       <td>Confirm Password: </td>
       <td> <input type="password" size="30" maxlength="50" name="passwordconf">
       </td>
+      %if pw_error:
       <td> {{pw_error}} </td>
+      %end
     </tr>
     <tr>
       <td>What's your favorite food item?: </td>
