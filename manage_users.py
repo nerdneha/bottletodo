@@ -48,9 +48,7 @@ def add_user(email, username, password=None, food=None):
         if food:
             db.users.update({'_id': email}, {'$set':
                 {'food': food}})
-
     except pymongo.errors.DuplicateKeyError:
-        #users.
         return "You're already in the database" % (email)
     except:
         return "Pymongo error, retry"
@@ -68,12 +66,12 @@ def start_session(email):
         return -1
     return str(session['_id'])
 
-KEYWORD = "HASH ME"
 def hash_string(string_to_hash):
     """
     Hash the string with a keyword
     """
-    return hmac.new(KEYWORD, string_to_hash).hexdigest()
+    keyword = "HASH ME"
+    return hmac.new(keyword, string_to_hash).hexdigest()
 
 def get_cookie(session_id):
     """

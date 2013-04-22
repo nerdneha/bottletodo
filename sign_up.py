@@ -17,7 +17,7 @@ else:
     db = CONNECTION.todolist
 
 @bottle.route('/')
-def default_go_to_login():
+def default_login():
     """
     Checks if user is still logged in and redirects to todo page; otherwise,
     Produces login page
@@ -27,61 +27,6 @@ def default_go_to_login():
         return bottle.redirect('/todo')
     else:
         return bottle.redirect('/login')
-
-@bottle.route('/signup', method='GET')
-def get_user_and_pw():
-    """
-    Produces signup page without error messages
-    """
-    return bottle.template('signup', dict(pw_error = None, user_error = None))
-
-@bottle.route('/signup', method='POST')
-def store_user_and_pw():
-    """
-    Adds user to database and redirects to todo page
-    Reproduces page with appropriate error message if:
-     - passwords don't match, or
-     - user is already in database
-     """
-    email = bottle.request.forms.get('email')
-    username = bottle.request.forms.get('username')
-    password = bottle.request.forms.get('password')
-    pwconf = bottle.request.forms.get('passwordconf')
-    food = bottle.request.forms.get('food') #took this variable for fun
-
-    if password == pwconf:
-        user_error_check = manage_users.add_user(email,
-                username, password, food)
-        if not user_error_check:
-            #Hooray, the pws match and the user is not in the system
-            session_id = manage_users.start_session(email)
-            cookie = manage_users.get_cookie(session_id)
-            bottle.response.set_cookie("session", cookie)
-            bottle.redirect('/todo')
-        else:
-            pw_error_message = "Your passwords do not match"
-            return bottle.template('signup', dict(pw_error = None,
-                user_error = user_error_check))
-    else:
-        return bottle.template('signup', dict(pw_error = pw_error_message,
-            user_error = None))
-
-def get_session():
-    """
-    Retrieves session from browser's stored cookie, if the session is valid
-    """
-    cookie = bottle.request.get_cookie("session")
-    if not cookie:
-        print "Sorry, no cookie in the cookie jar"
-        return None
-    else:
-        session_id = manage_users.get_session_from_cookie(cookie)
-        if not session_id:
-            print "Sorry, your cookie didn't generate properly"
-            return None
-        else:
-            session = manage_users.get_session_from_db(session_id)
-    return session
 
 @bottle.route('/login', method='GET')
 def get_login_info():
@@ -128,6 +73,44 @@ def log_user_in():
         return bottle.template('login', dict(user_error = user_error_msg,
             pw_error = pw_error_msg))
 
+@bottle.route('/signup', method='GET')
+def get_user_and_pw():
+    """
+    Produces signup page without error messages
+    """
+    return bottle.template('signup', dict(pw_error = None, user_error = None))
+
+@bottle.route('/signup', method='POST')
+def store_user_and_pw():
+    """
+    Adds user to database and redirects to todo page
+    Reproduces page with appropriate error message if:
+     - passwords don't match, or
+     - user is already in database
+     """
+    email = bottle.request.forms.get('email')
+    username = bottle.request.forms.get('username')
+    password = bottle.request.forms.get('password')
+    pwconf = bottle.request.forms.get('passwordconf')
+    food = bottle.request.forms.get('food') #took this variable for fun
+
+    if password == pwconf:
+        user_error_check = manage_users.add_user(email,
+                username, password, food)
+        if not user_error_check:
+            #Hooray, the pws match and the user is not in the system
+            session_id = manage_users.start_session(email)
+            cookie = manage_users.get_cookie(session_id)
+            bottle.response.set_cookie("session", cookie)
+            bottle.redirect('/todo')
+        else:
+            pw_error_message = "Your passwords do not match"
+            return bottle.template('signup', dict(pw_error = None,
+                user_error = user_error_check))
+    else:
+        return bottle.template('signup', dict(pw_error = pw_error_message,
+            user_error = None))
+
 @bottle.route('/anon', method='GET')
 def explain_anon_to_user():
     """
@@ -170,11 +153,28 @@ def logout_user():
     """
     session = get_session()
     if session == None:
-        bottle.redirect('/login', dict(user_error = "", pw_error = ""))
+        bottle.redirect('/login', dict(user_error = None, pw_error = None))
     else:
         manage_users.end_session(session['_id'])
         bottle.response.set_cookie("session", "")
         bottle.redirect('/login')
+
+def get_session():
+    """
+    Retrieves session from browser's stored cookie, if the session is valid
+    """
+    cookie = bottle.request.get_cookie("session")
+    if not cookie:
+        print "Sorry, no cookie in the cookie jar"
+        return None
+    else:
+        session_id = manage_users.get_session_from_cookie(cookie)
+        if not session_id:
+            print "Sorry, your cookie didn't generate properly"
+            return None
+        else:
+            session = manage_users.get_session_from_db(session_id)
+    return session
 
 if __name__ == '__main__':
     if os.environ.get('ENVIRONMENT') == 'PRODUCTION':
