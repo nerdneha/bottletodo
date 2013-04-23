@@ -1,7 +1,7 @@
 bottletodo
 ==========
 
-This was my second web app (that wasn't a "hello world") and my first app where I explored using a database and interactions between pages. I learned the difference between a GET and POST on this and explored authentication with this site for the first time. 
+This app is a "todo" list app where people can collaborate on the items outstanding and view completed items. This was my second web app (that wasn't a "hello world") and my first app where I explored using a database and interactions between pages. I learned the difference between a GET and POST on this and explored authentication with this site for the first time. 
 
 I used: Python 2.7.3, the Bottle Framework, and MongoDB. To use my tech, go to
     requirements.txt
