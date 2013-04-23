@@ -24,3 +24,6 @@ Welcome to the collaborative todo list - my first app that uses a db!
 
 <a href="/signup">If you're new, create an account here!</a> <br />
 <a href="/anon">If you're just checking this out, view as anonymous here!</a>
+<br>
+<br>
+<a href="https://github.com/nehalita/bottletodo">My GitHub Repo for this site</a>
